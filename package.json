@@ -1,0 +1,15 @@
+{
+  "name": "esen-tester-assignment",
+  "version": "0.1.0",
+  "description": "",
+  "main": "code.js",
+  "scripts": {
+	 "server": "http-server",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "http-server": "^0.11.1"
+  }
+}

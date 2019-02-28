@@ -1,0 +1,120 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Frameset//EN" "http://www.w3.org/TR/html4/frameset.dtd">
+
+<head>
+	<title>Esen Filter Demo</title>
+
+	<script type="text/javascript" src="code.js"></script>
+	<script src="https://code.highcharts.com/highcharts.js"></script>
+</head>
+
+<body>
+	<div id="my-chart"></div>
+
+	<center>
+		<button onclick="changeSignal()">Generate New Random Signal</button>
+		<select onchange="selectedFilterChanged(this)" autocomplete="off">
+			<option value="0.33 0.34 0.33" selected>Smoothing Filter</option>
+			<option value="0.2 0.2 0.2 0.2 0.2 0.2 0.2">Big Smoothing Filter</option>
+			<option value="custom">Custom</option>
+		</select>
+		<input id="customFilter" style="display: none" type="text" pattern="((-|\+)?[0-9]+(\.[0-9]+)?)( ((-|\+)?[0-9]+(\.[0-9]+)?))*" value="0.5 -1 0.5" onchange="selectedFilterChanged(this, true)"/>
+	</center>
+
+	<hr/>
+
+	<script type="text/javascript">
+		const SIGNAL_LEN = 50;
+		const MAX_AMPLITUDE = 10;
+		const DEFAULT_CHART_PROPS = {
+			chart: {
+				type: "line"
+			},
+			title: {
+				text: ""
+			},
+			subtitle: {
+				text: ""
+			},
+			xAxis: {
+				categories: [],
+				crosshair: true
+			},
+			yAxis: {
+				max: MAX_AMPLITUDE,
+				min: -MAX_AMPLITUDE,
+				title: "Signal Values"
+			},
+			tooltip: {},
+			plotOptions: {
+				column: {
+					pointPadding: 0.2,
+					borderWidth: 0
+				}
+			},
+			series: []
+		};
+		var signal = undefined;
+		var chart = undefined;
+		var filter = [0.33, 0.34, 0.33];
+
+		const generateRandomSignal = len => new Array(len)
+			.fill(undefined)
+			.map(() => Math.floor(2 * MAX_AMPLITUDE * Math.random()) - MAX_AMPLITUDE);
+
+		const stringToFilter = x => {
+			try {
+				return x.split(" ").map(parseFloat);
+			} catch (e) {
+				console.log(x);
+				console.log("bad filter");
+				[0];
+			}
+		};
+
+		function _applyFilter() {
+			chart.series[1].setData(applyFilter(signal, filter));
+		}
+
+		function changeSignal() {
+			signal = generateRandomSignal(SIGNAL_LEN);
+			chart.series[0].setData(signal);
+			_applyFilter();
+		}
+
+		function showCustomFilter() {
+			document.querySelector("#customFilter").style = "";
+		}
+
+		function hideCustomFilter() {
+			document.querySelector("#customFilter").style = "display: none";
+		}
+
+		function selectedFilterChanged(e, keepCustomShown) {
+			let val = e.value;
+			if (val == "custom") {
+				filter = stringToFilter(document.querySelector("#customFilter").value);
+				showCustomFilter();
+			} else {
+				filter = stringToFilter(val);
+				if (!keepCustomShown) {
+					hideCustomFilter();
+				}
+			}
+			_applyFilter();
+		}
+
+		(function() {
+			signal = generateRandomSignal(SIGNAL_LEN);
+			chart = Highcharts.chart("my-chart", Object.assign({}, DEFAULT_CHART_PROPS, {
+				series: [{
+					name: "Original Signal",
+					data: signal
+				}, {
+					name: "Filtered Signal",
+					data: signal.slice()
+				}]
+			}));
+			_applyFilter();
+		})();
+	</script>
+</body>
